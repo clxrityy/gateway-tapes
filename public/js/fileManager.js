@@ -11,7 +11,7 @@ class FileManager {
 
     this.initializeElements();
     this.bindEvents();
-    this.loadFiles();
+    this.loadFiles(); // Start at root
   }
 
   initializeElements() {
@@ -59,7 +59,7 @@ class FileManager {
     // Breadcrumb events
     this.backButton.addEventListener("click", () => this.navigateBack());
     this.breadcrumbHome.addEventListener("click", () =>
-      this.navigateToPath("")
+      this.navigateToPath("1/")
     );
 
     // Retry event
@@ -102,7 +102,7 @@ class FileManager {
       console.log("📁 Loaded items:", this.currentItems.length);
 
       // If this is the root level, also load all items for global search
-      if (path === "") {
+      if (path === "1/") {
         console.log("🔍 Loading all items for search...");
         await this.loadAllItems();
       }
@@ -253,22 +253,22 @@ class FileManager {
   }
 
   async navigateBack() {
-    if (this.currentPath === "") return;
+    if (this.currentPath === "1/") return;
 
     // Calculate parent path
     const pathSegments = this.currentPath.split("/").filter(Boolean);
     pathSegments.pop(); // Remove last segment
     const parentPath =
-      pathSegments.length > 0 ? pathSegments.join("/") + "/" : "";
+      pathSegments.length > 0 ? pathSegments.join("/") + "/" : "1/";
 
     await this.navigateToPath(parentPath);
   }
 
   updateBreadcrumbs() {
-    const canGoBack = this.currentPath !== "";
+    const canGoBack = this.currentPath !== "1/";
     this.backButton.disabled = !canGoBack;
 
-    if (this.currentPath === "") {
+    if (this.currentPath === "1/") {
       this.breadcrumbNav.classList.add("hidden");
       return;
     }
@@ -353,7 +353,9 @@ class FileManager {
       console.log("Viewing file:", file.name);
 
       // Get view URL from server
-      const response = await fetch(`/api/view?key=${encodeURIComponent(file.key)}`);
+      const response = await fetch(
+        `/api/view?key=${encodeURIComponent(file.key)}`
+      );
       const data = await response.json();
 
       if (!data.success) {

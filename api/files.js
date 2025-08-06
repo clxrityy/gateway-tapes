@@ -16,18 +16,18 @@ const bucketName = "gateway-tapes";
 function getFileTypeAndExtension(key) {
   const parts = key.split(".");
   const extension = parts.length > 1 ? parts.pop().toLowerCase() : "";
-  
+
   const audioExtensions = ["mp3", "wav", "flac", "m4a", "aac", "ogg", "wma"];
   const documentExtensions = ["pdf", "doc", "docx", "txt", "rtf"];
   const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
   const videoExtensions = ["mp4", "avi", "mov", "wmv", "flv", "webm"];
-  
+
   let fileType = "other";
   if (audioExtensions.includes(extension)) fileType = "audio";
   else if (documentExtensions.includes(extension)) fileType = "document";
   else if (imageExtensions.includes(extension)) fileType = "image";
   else if (videoExtensions.includes(extension)) fileType = "video";
-  
+
   return { fileType, extension };
 }
 
@@ -35,22 +35,22 @@ function getFileTypeAndExtension(key) {
 function organizeItems(objects, prefix = "", getAllFiles = false) {
   const folders = new Map();
   const files = [];
-  
+
   // Remove the prefix from object keys and organize
   for (const obj of objects) {
     const relativePath = prefix ? obj.Key.replace(prefix, "") : obj.Key;
-    
+
     // Skip if empty path
     if (!relativePath || relativePath === "/") continue;
-    
+
     const segments = relativePath.split("/").filter(Boolean);
-    
+
     if (segments.length === 0) continue;
-    
+
     if (segments.length === 1) {
       // Direct file in current directory
       const { fileType, extension } = getFileTypeAndExtension(segments[0]);
-      
+
       files.push({
         type: "file",
         name: segments[0],
@@ -65,7 +65,7 @@ function organizeItems(objects, prefix = "", getAllFiles = false) {
       // Subdirectory (only show immediate subdirs when not getting all files)
       const folderName = segments[0];
       const folderPath = prefix + folderName + "/";
-      
+
       if (!folders.has(folderName)) {
         folders.set(folderName, {
           type: "folder",
@@ -78,8 +78,10 @@ function organizeItems(objects, prefix = "", getAllFiles = false) {
       }
     } else {
       // Getting all files - include files from subdirectories
-      const { fileType, extension } = getFileTypeAndExtension(segments[segments.length - 1]);
-      
+      const { fileType, extension } = getFileTypeAndExtension(
+        segments[segments.length - 1]
+      );
+
       files.push({
         type: "file",
         name: segments[segments.length - 1],
@@ -92,7 +94,7 @@ function organizeItems(objects, prefix = "", getAllFiles = false) {
       });
     }
   }
-  
+
   return {
     folders: Array.from(folders.values()),
     files: files,
@@ -102,11 +104,11 @@ function organizeItems(objects, prefix = "", getAllFiles = false) {
 // Helper function to generate breadcrumbs
 function generateBreadcrumbs(prefix) {
   if (!prefix) return [];
-  
+
   const segments = prefix.split("/").filter(Boolean);
   const breadcrumbs = [];
   let currentPath = "";
-  
+
   for (const segment of segments) {
     currentPath += segment + "/";
     breadcrumbs.push({
@@ -114,23 +116,28 @@ function generateBreadcrumbs(prefix) {
       path: currentPath,
     });
   }
-  
+
   return breadcrumbs;
 }
 
 export default async function handler(req, res) {
   // Enable CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  if (req.method === 'OPTIONS') {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
   }
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res
+      .status(405)
+      .json({ success: false, error: "Method not allowed" });
   }
 
   try {
@@ -139,8 +146,10 @@ export default async function handler(req, res) {
 
     const { prefix = "", all = "false" } = req.query;
     const getAllFiles = all === "true";
-    
-    console.log(`🔍 Fetching files with prefix: "${prefix}", getAllFiles: ${getAllFiles}`);
+
+    console.log(
+      `🔍 Fetching files with prefix: "${prefix}", getAllFiles: ${getAllFiles}`
+    );
 
     // Prepare S3 command
     const command = new ListObjectsV2Command({
@@ -153,14 +162,99 @@ export default async function handler(req, res) {
     console.log("⚡ Executing S3 command...");
     const response = await r2Client.send(command);
     console.log("✅ R2 response received");
+    console.log("📊 Response details:");
+    console.log("- KeyCount:", response.KeyCount);
+    console.log("- Contents length:", (response.Contents || []).length);
+    console.log(
+      "- CommonPrefixes length:",
+      (response.CommonPrefixes || []).length
+    );
 
-    const objects = response.Contents || [];
-    console.log(`📦 Found ${objects.length} objects`);
+    if (response.CommonPrefixes && response.CommonPrefixes.length > 0) {
+      console.log("📁 CommonPrefixes found:");
+      response.CommonPrefixes.forEach((cp, index) => {
+        console.log(`  ${index + 1}. ${cp.Prefix}`);
+      });
+    }
 
-    const { folders, files } = organizeItems(objects, prefix, getAllFiles);
+    let folders = [];
+    let files = [];
+
+    if (getAllFiles) {
+      // When getting all files, process all contents
+      const objects = response.Contents || [];
+      console.log(`📦 Found ${objects.length} objects`);
+
+      const { folders: foundFolders, files: foundFiles } = organizeItems(
+        objects,
+        prefix,
+        getAllFiles
+      );
+      folders = foundFolders;
+      files = foundFiles;
+    } else {
+      // Normal directory browsing mode - use CommonPrefixes for folders
+
+      // Get folders from CommonPrefixes
+      folders = (response.CommonPrefixes || []).map((prefixObj) => ({
+        type: "folder",
+        key: prefixObj.Prefix,
+        name: prefixObj.Prefix.slice(0, -1).split("/").pop(),
+        fullPath: prefixObj.Prefix,
+        size: 0,
+        lastModified: new Date().toISOString(),
+      }));
+
+      console.log(`📂 Created ${folders.length} folder objects:`);
+      folders.forEach((folder, index) => {
+        console.log(`  ${index + 1}. ${folder.name} (${folder.key})`);
+      });
+
+      // Get files from Contents (excluding folders)
+      const audioExtensions = [
+        "mp3",
+        "wav",
+        "flac",
+        "m4a",
+        "aac",
+        "ogg",
+        "wma",
+      ];
+      const documentExtensions = ["pdf", "doc", "docx", "txt", "rtf"];
+      const supportedExtensions = [...audioExtensions, ...documentExtensions];
+
+      files = (response.Contents || [])
+        .filter((obj) => {
+          const ext = obj.Key.split(".").pop()?.toLowerCase() || "";
+          return supportedExtensions.includes(ext) && obj.Key !== prefix; // Exclude the prefix itself
+        })
+        .map((obj) => {
+          const ext = obj.Key.split(".").pop()?.toLowerCase() || "";
+          let fileType = "other";
+          if (audioExtensions.includes(ext)) {
+            fileType = "audio";
+          } else if (documentExtensions.includes(ext)) {
+            fileType = "document";
+          }
+
+          return {
+            type: "file",
+            key: obj.Key,
+            name: obj.Key.split("/").pop() || obj.Key,
+            fullPath: obj.Key,
+            size: obj.Size || 0,
+            lastModified: obj.LastModified || new Date().toISOString(),
+            extension: ext,
+            fileType: fileType,
+          };
+        });
+    }
+
     const items = [...folders, ...files];
 
-    console.log(`📊 Processed ${folders.length} folders and ${files.length} files`);
+    console.log(
+      `📊 Processed ${folders.length} folders and ${files.length} files`
+    );
 
     const result = {
       success: true,
@@ -173,12 +267,11 @@ export default async function handler(req, res) {
 
     console.log("📤 Sending response");
     res.status(200).json(result);
-
   } catch (error) {
     console.error("❌ Error in files API:", error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message || "Failed to fetch files" 
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to fetch files",
     });
   }
 }
