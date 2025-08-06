@@ -11,7 +11,7 @@ class FileManager {
 
     this.initializeElements();
     this.bindEvents();
-    this.loadFiles(); // Start at root
+    this.loadFiles(); // Start at root to show all top-level folders
   }
 
   initializeElements() {
@@ -59,7 +59,7 @@ class FileManager {
     // Breadcrumb events
     this.backButton.addEventListener("click", () => this.navigateBack());
     this.breadcrumbHome.addEventListener("click", () =>
-      this.navigateToPath("1/")
+      this.navigateToPath("")
     );
 
     // Retry event
@@ -102,7 +102,7 @@ class FileManager {
       console.log("📁 Loaded items:", this.currentItems.length);
 
       // If this is the root level, also load all items for global search
-      if (path === "1/") {
+      if (path === "") {
         console.log("🔍 Loading all items for search...");
         await this.loadAllItems();
       }
@@ -253,22 +253,22 @@ class FileManager {
   }
 
   async navigateBack() {
-    if (this.currentPath === "1/") return;
+    if (this.currentPath === "") return;
 
     // Calculate parent path
     const pathSegments = this.currentPath.split("/").filter(Boolean);
     pathSegments.pop(); // Remove last segment
     const parentPath =
-      pathSegments.length > 0 ? pathSegments.join("/") + "/" : "1/";
+      pathSegments.length > 0 ? pathSegments.join("/") + "/" : "";
 
     await this.navigateToPath(parentPath);
   }
 
   updateBreadcrumbs() {
-    const canGoBack = this.currentPath !== "1/";
+    const canGoBack = this.currentPath !== "";
     this.backButton.disabled = !canGoBack;
 
-    if (this.currentPath === "1/") {
+    if (this.currentPath === "") {
       this.breadcrumbNav.classList.add("hidden");
       return;
     }
