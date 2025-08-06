@@ -1,0 +1,286 @@
+/* Icon-specific styles for Gateway Tapes */
+
+/* Base icon styles */
+.icon {
+    display: inline-block;
+    vertical-align: middle;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+/* File icon styles */
+.file-icon {
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+}
+
+/* Action icon styles */
+.action-icon {
+    color: inherit;
+    transition: all 0.2s ease;
+}
+
+/* Button icon styles */
+.icon-button .icon {
+    transition: transform 0.2s ease;
+}
+
+.icon-button:hover .icon {
+    transform: scale(1.1);
+}
+
+/* Play button specific styles */
+.play-button-overlay .action-icon {
+    color: white;
+    fill: white;
+}
+
+.play-button-overlay:hover .action-icon {
+    color: white;
+    fill: white;
+}
+
+/* Dark theme play button overrides */
+[data-theme="dark"] .play-button-overlay .action-icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .play-button-overlay:hover .action-icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+/* Volume button styles */
+.volume-button .icon {
+    color: var(--text-secondary);
+}
+
+.volume-button:hover .icon {
+    color: var(--primary-color);
+}
+
+/* Empty state icon styles */
+.empty-icon .icon {
+    color: var(--text-disabled);
+    opacity: 0.6;
+}
+
+/* Loading animation override for loading icon */
+.loading-spinner .icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error state icon styles */
+.error-icon .icon {
+    color: var(--error-color, #ff4444);
+}
+
+/* File card icon hover effects */
+.file-card:hover .file-icon {
+    color: var(--text-primary);
+}
+
+/* Playing state styles */
+.file-card.playing .action-icon {
+    color: var(--background-color) !important;
+    fill: var(--background-color) !important;
+}
+
+/* View control icon styles */
+.view-button.active .icon {
+    color: white;
+    fill: white;
+}
+
+.view-button:not(.active) .icon {
+    color: var(--text-secondary);
+}
+
+.view-button:hover .icon {
+    color: white;
+    fill: white;
+}
+
+/* Dark theme view control overrides */
+[data-theme="dark"] .view-button.active .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .view-button:hover .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+/* Breadcrumb icon styles */
+.breadcrumb-home .icon {
+    color: var(--text-secondary);
+    margin-right: 4px;
+}
+
+.breadcrumb-home:hover .icon {
+    color: var(--primary-color);
+}
+
+/* Button with background color icon styles */
+.back-button .icon {
+    color: white;
+    fill: white;
+    margin-right: 4px;
+}
+
+.back-button:hover .icon {
+    color: white;
+    fill: white;
+}
+
+.retry-button .icon {
+    color: white;
+    fill: white;
+}
+
+/* Audio player control icons */
+.play-button .icon {
+    color: white;
+    fill: white;
+}
+
+.control-button .icon {
+    color: var(--player-text);
+    fill: var(--player-text);
+}
+
+/* Dark theme audio player overrides */
+[data-theme="dark"] .play-button .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .retry-button .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .back-button .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .back-button:hover .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+/* Dark theme upload container overrides */
+[data-theme="dark"] .upload-container .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+[data-theme="dark"] .upload-container:hover .icon {
+    color: var(--background-color);
+    fill: var(--background-color);
+}
+
+/* Theme toggle icon */
+#themeIcon .icon {
+    transition: transform 0.3s ease;
+}
+
+.icon-button:hover #themeIcon .icon {
+    transform: rotate(15deg) scale(1.1);
+}
+
+/* Search icon styles */
+#searchIcon .icon {
+    color: var(--text-secondary);
+}
+
+#searchToggle:hover #searchIcon .icon {
+    color: var(--primary-color);
+}
+
+/* Clear search icon */
+#clearSearchIcon .icon {
+    color: var(--text-secondary);
+}
+
+.clear-search:hover #clearSearchIcon .icon {
+    color: var(--error-color, #ff4444);
+}
+
+/* Logo icon */
+.logo-icon .icon {
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+/* General button background contrast rules */
+button[style*="background-color"] .icon,
+button[class*="bg-"] .icon,
+.button-with-bg .icon {
+    color: white !important;
+    fill: white !important;
+}
+
+/* Ensure visibility on dark backgrounds */
+.audio-player .icon,
+.player-bg .icon {
+    color: var(--player-text);
+    fill: var(--player-text);
+}
+
+/* Responsive icon sizes */
+@media (max-width: 768px) {
+    .icon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .file-icon .icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .empty-icon .icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .icon {
+        stroke-width: 2;
+    }
+
+    .action-icon {
+        filter: contrast(1.2);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .icon {
+        transition: none;
+    }
+
+    .loading-spinner .icon {
+        animation: none;
+    }
+
+    .icon-button:hover .icon {
+        transform: none;
+    }
+}

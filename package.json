@@ -1,0 +1,30 @@
+{
+  "name": "gateway-tapes",
+  "version": "1.0.0",
+  "description": "Open source audio streaming platform with Cloudflare R2 integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "echo 'No build step required for this setup'"
+  },
+  "keywords": ["audio", "streaming", "cloudflare", "r2", "music", "open-source"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "@aws-sdk/client-s3": "^3.405.0",
+    "@aws-sdk/s3-request-presigner": "^3.405.0",
+    "multer": "^1.4.5-lts.1",
+    "helmet": "^7.0.0",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
